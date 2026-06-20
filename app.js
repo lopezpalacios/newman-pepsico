@@ -140,6 +140,33 @@ document.querySelectorAll('#drTabs button').forEach(b => {
   });
 });
 
+/* contadores animados (sección NUMBERS, estilo newman.re) */
+function animateCount(el) {
+  const to = +el.dataset.to, pre = el.dataset.pre || '', suf = el.dataset.suf || '',
+        plain = el.dataset.plain === '1', dec = !plain && to % 1 !== 0 ? 1 : 0;
+  const t0 = performance.now(), dur = 1400;
+  function tick(now) {
+    const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3), v = to * e;
+    el.textContent = plain ? pre + Math.round(v) + suf
+      : pre + v.toLocaleString('es-MX', { minimumFractionDigits: dec, maximumFractionDigits: dec }) + suf;
+    if (k < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+const cio = new IntersectionObserver(es => {
+  es.forEach(e => { if (e.isIntersecting) { animateCount(e.target); cio.unobserve(e.target); } });
+}, { threshold: 0.5 });
+document.querySelectorAll('#numbers .n').forEach(el => cio.observe(el));
+
+/* formulario de contacto → mailto */
+function contactSubmit(f) {
+  const g = n => encodeURIComponent(f[n].value || '');
+  const body = `Nombre: ${f.nombre.value}%0AEmpresa: ${f.empresa.value}%0A%0A${g('mensaje')}`;
+  window.location.href = `mailto:jesus@lopezpalacios.com?subject=${encodeURIComponent('GEPP × Newman — ' + (f.empresa.value || 'Contacto'))}&body=${body}`;
+  return false;
+}
+window.contactSubmit = contactSubmit;
+
 /* reveals */
 const io = new IntersectionObserver(es => {
   es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
